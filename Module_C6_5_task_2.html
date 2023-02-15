@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .btn {
+            padding: 0;
+            background-color: transparent;
+            border: none;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: none;
+            cursor: pointer;
+
+            display: flex;
+            margin: 5px 10px;
+            padding: 10px 20px;
+            border-radius: 1px;
+            font-size: 12px;
+            line-height: 15px;
+            text-transform: uppercase;
+            color: white;
+            background: #315efb;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            box-shadow: 0px 2px 8px 2px rgba(141,150,178,.3);
+            transform: scale(1.05);
+        }
+
+        .btn_text {
+            margin-right: 10px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<h1>Задание 2</h1>
+<p>Сверстайте кнопку, клик на которую будет выводить данные о размерах экрана с помощью alert. </p>
+
+<button class="btn j-btn-test">
+    <div class="btn_text">Размер экрана</div>
+</button>
+
+<script>
+    const btn = document.querySelector('.j-btn-test');
+
+    btn.addEventListener('click', () => {
+
+        let screenWidth = window.screen.width;
+        let screenHeight =  window.screen.height;
+        alert(`Размеры экрана девайса или монитора: ширина - ${screenWidth}, высота - ${screenHeight}`);
+
+        let screenInnerWidth = window.innerWidth;
+        let screenInnerHeight = window.innerHeight;
+        alert(`Размер окна браузера с учётом полосы прокрутки: ширина - ${screenInnerWidth}, высота - ${screenInnerHeight}`);
+
+        let screenClientWidth = document.documentElement.clientWidth;
+        let screenClientHeight = document.documentElement.clientHeight;
+        alert(`Размер окна браузера без учёта полосы прокрутки: ширина - ${screenClientWidth}, высота - ${screenClientHeight}`);
+
+        if (window.matchMedia("(min-width: 700px)").matches) {
+            // Эта часть выполнится, если ширина области просмотра >=700px
+            alert(`Ширина окна браузера больше 700xp`);
+        } else {
+            // Эта часть выполнится, если ширина области просмотра < 700px
+            alert(`Ширина окна браузера меньше 700xp`);
+        }
+        if (window.matchMedia("(min-height: 500px)").matches) {
+            // Эта часть выполнится, если ширина области просмотра >=500px
+            alert(`Высота окна браузера больше 500xp`);
+        } else {
+            // Эта часть выполнится, если ширина области просмотра < 500px
+            alert(`Высота окна браузера меньше 500xp`);
+        }
+    });
+
+</script>
+
+</body>
+</html>
+
+
+
+

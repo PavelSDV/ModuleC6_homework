@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .btn {
+            padding: 0;
+            background-color: transparent;
+            border: none;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: none;
+            cursor: pointer;
+
+            display: flex;
+            margin: 5px 10px;
+            padding: 10px 15px;
+            border-radius: 1px;
+            font-size: 12px;
+            line-height: 15px;
+
+            color: black;
+            font-weight: bold;
+            background: #BAD7EC;
+            transition: 0.3s;
+            width: 200px;
+        }
+
+        .btn:hover {
+            box-shadow: 0px 2px 8px 2px rgba(141,150,178,.3);
+            transform: scale(1.05);
+        }
+        #inputText {
+            width: 300px;
+            height: 30px;
+            margin: 5px 10px;
+            border: 2px solid #BAD7EC;
+            font-size: 14px;
+        }
+
+        .j-btn-open, .j-btn-send, .j-btn-close, .j-btn-geo, #output {
+            display: inline-block;
+        }
+        .j-btn-send, .j-btn-geo {
+            width: 120px;
+        }
+
+        j-btn-open{
+            position: fixed;
+            top: 0;
+            left: 200px;
+        }
+        .chatWindow {
+            display: none;
+            border: 2px solid #BAD7EC;
+            width: 630px;
+            height: 400px;
+            overflow:hidden;
+        }
+
+    </style>
+</head>
+<body>
+
+<button class="btn j-btn-open">Открыть чат</button>
+<button class="btn j-btn-close">Закрыть чат</button>
+
+<p class="message">................</p>
+
+
+<div class="chatWindow" id="chatForm">
+
+    <input type="text" id="inputText" placeholder="Здесь вводится текст сообщения">
+    <button class="btn j-btn-send">Отправить</button>
+    <button class="btn j-btn-geo">Гео-локация</button>
+    <div id="output"></div>
+</div>
+
+    <script>
+        const wsUri = "wss://echo-ws-service.herokuapp.com/";
+
+        const output = document.getElementById("output");
+        const btnOpen = document.querySelector('.j-btn-open');
+        const btnClose = document.querySelector('.j-btn-close');
+        const btnSend = document.querySelector('.j-btn-send');
+
+
+        let websocket;
+
+        function writeToScreen(message) {
+            let messageNode = document.querySelector('.message');
+            messageNode.textContent = message;
+        }
+
+        function writeToScreen2(message) {
+            let pre = document.createElement("p");
+            pre.style.wordWrap = "break-word";
+            pre.innerHTML = message;
+            // output.appendChild(pre);  // чат идет вниз
+            output.insertBefore(pre, output.firstChild) // чат идет вверх
+        }
+
+        btnOpen.addEventListener('click', () => {
+
+            document.getElementById("chatForm").style.display = "block";
+
+            websocket = new WebSocket(wsUri);
+            websocket.onopen = function(evt) {
+                writeToScreen("CONNECTED");
+            };
+            websocket.onclose = function(evt) {
+                writeToScreen("DISCONNECTED");
+            };
+            websocket.onmessage = function(evt) {
+                writeToScreen2('<span style="color: blue; ' +
+                                            'display: inline-block; ' +
+                                            'border: 2px solid #BAD7EC; ' +
+                                            'padding: 5px 5px; ' +
+                                            'border-radius: 5px; ' +
+                                            'margin-left: 20px; ' +
+                                            'max-width: 280px">' + evt.data +'</span>');
+            };
+            websocket.onerror = function(evt) {
+                writeToScreen2('<span style="color: red;">ERROR:</span> ' + evt.data);
+            };
+        });
+
+        btnClose.addEventListener('click', () => {
+            output.innerHTML = ''; //удалить сообщения
+            document.getElementById("chatForm").style.display = "none";
+
+            websocket.close();
+            websocket = null;
+        });
+
+        btnSend.addEventListener('click', () => {
+
+            const message = document.getElementById("inputText").value;
+
+            if (message != '') {
+                // writeToScreen2("SENT: " + message);
+                writeToScreen2('<span style="color: black; ' +
+                                            'display: inline-block; ' +
+                                            'border: 2px solid #BAD7EC; ' +
+                                            'padding: 5px 5px; ' +
+                                            'border-radius: 5px; ' +
+                                            'margin-left: 310px; ' +
+                                            'margin-right: 20px;">' + message +'</span>');
+
+                document.getElementById("inputText").value = ''; // удалить текст из input
+
+                websocket.send(message);}
+            else {
+                writeToScreen2('');
+            }
+        });
+
+        //////////////////     ---      ГЕОЛОКАЦИЯ     ---     ///////////////////////////////////
+
+        const btn = document.querySelector('.j-btn-geo');
+
+        const error = () => {
+            alert('Невозможно получить ваше местоположение');
+            // output.textContent = 'Невозможно получить ваше местоположение';
+        }
+
+        const success = (position) => {
+            console.log('position', position);
+            const latitude  = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            writeToScreen2(`<span style="color: black; ` +
+                                        'display: inline-block; ' +
+                                        'border: 2px solid #BAD7EC; ' +
+                                        'padding: 5px 5px; ' +
+                                        'border-radius: 5px; ' +
+                                        'margin-left: 310px; ' +
+                                        'margin-right: 20px;">' +
+                '<a href = https://www.openstreetmap.org/#map=18/${latitude}/${longitude} target="_blank">Гео-локация</a>' +'</span>');
+
+        }
+
+        btn.addEventListener('click', () => {
+
+            if (!navigator.geolocation) {
+                alert('Geolocation не поддерживается вашим браузером');
+                // output.textContent = 'Geolocation не поддерживается вашим браузером';
+            } else {
+                console.log('Определение местоположения…');
+                // output.textContent = 'Определение местоположения…';
+                navigator.geolocation.getCurrentPosition(success, error);
+            }
+        });
+
+    </script>
+
+</body>
+</html>
